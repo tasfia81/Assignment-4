@@ -328,10 +328,11 @@ class PassDetailScreen extends StatelessWidget {
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: isInactive
+                      onPressed: (isInactive || controller.isExchanging.value)
                           ? null
-                          : () => context.go(
-                                '/wallet/category/$categoryId/pass/$passId/secure',
+                          : () => controller.requestAndOpenSecurePass(
+                                categoryId,
+                                passId,
                               ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
@@ -343,26 +344,35 @@ class PassDetailScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(18),
                         ),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            isInactive
-                                ? Icons.lock_outline_rounded
-                                : Icons.qr_code_scanner_rounded,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            isInactive ? "PASS INACTIVE" : "VIEW SECURE ACCESS KEY",
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
+                      child: controller.isExchanging.value
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  isInactive
+                                      ? Icons.lock_outline_rounded
+                                      : Icons.qr_code_scanner_rounded,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  isInactive ? "PASS INACTIVE" : "VIEW SECURE ACCESS KEY",
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
-                      ),
                     ),
                   ),
                 ],

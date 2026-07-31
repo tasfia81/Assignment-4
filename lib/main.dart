@@ -7,6 +7,7 @@ import 'core/theme/app_theme.dart';
 import 'data/repositories/pass_repository.dart';
 import 'routing/app_router.dart';
 import 'services/deep_link_service.dart';
+import 'services/token_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,7 +17,7 @@ void main() async {
   Get.put(SecureStorageService());
   Get.put(DioClient());
   
-  // Register deep link controller
+  Get.put(TokenService());
   Get.put(DeepLinkService());
   
   // Register global GoRouter config

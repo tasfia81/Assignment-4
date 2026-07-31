@@ -1,6 +1,8 @@
 import 'package:get/get.dart';
 import '../models/category_model.dart';
 import '../models/pass_model.dart';
+import '../models/token_model.dart';
+import '../../core/errors/app_error.dart';
 
 class PassRepository extends GetxService {
   final List<CategoryModel> categories = [
@@ -156,5 +158,39 @@ class PassRepository extends GetxService {
   PassModel? getPassByToken(String token) {
     // If the token matches a pass ID directly
     return getPassById(token);
+  }
+
+  // Simulated Backend Token Exchange Endpoint
+  Future<Map<String, dynamic>> exchangeDeepLinkToken(TokenModel token) async {
+    // 1. Simulate network latency
+    await Future.delayed(const Duration(milliseconds: 800));
+
+    // 2. Simulated server errors mapping based on nonces
+    if (token.nonce == 'nonce_revoked') {
+      throw AppErrorType.revokedToken;
+    } else if (token.nonce == 'nonce_redeemed') {
+      throw AppErrorType.redeemedToken;
+    } else if (token.nonce == 'nonce_network_error') {
+      throw AppErrorType.networkError;
+    } else if (token.nonce == 'nonce_unknown_error') {
+      throw AppErrorType.unknownError;
+    }
+
+    // 3. Assure target pass exists in database
+    final pass = getPassById(token.passId);
+    if (pass == null) {
+      throw AppErrorType.invalidToken;
+    }
+
+    // 4. Return successful session grant payload
+    final sessionToken = "session_token_${token.passId}_${token.nonce}";
+    final expiresAt = DateTime.now().add(const Duration(hours: 1)).toIso8601String();
+
+    return {
+      "sessionToken": sessionToken,
+      "passId": token.passId,
+      "scope": "pass",
+      "expiresAt": expiresAt,
+    };
   }
 }

@@ -4,7 +4,10 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../core/errors/app_error.dart';
+import '../core/storage/secure_storage_service.dart';
+import '../data/models/token_model.dart';
 import '../data/repositories/pass_repository.dart';
+import 'token_service.dart';
 
 enum DeepLinkState {
   none,
@@ -125,10 +128,10 @@ class DeepLinkService extends GetxService with WidgetsBindingObserver {
     lastSource.value = source;
     lastError.value = null;
 
-    // Simulate token validation network delay for a premium user experience
-    await Future.delayed(const Duration(milliseconds: 1500));
+    // Simulate validation delay for a premium user experience
+    await Future.delayed(const Duration(milliseconds: 1000));
 
-    // Handle special mock error tokens
+    // Handle special mock legacy error tokens from Phase 1 simulation cases
     if (token == 'error_expired') {
       _triggerError(AppErrorType.expiredToken, source);
       return;
@@ -146,19 +149,58 @@ class DeepLinkService extends GetxService with WidgetsBindingObserver {
       return;
     }
 
-    // Resolve token to pass
-    final pass = _repository.getPassByToken(token);
+    // 1. Local Parsing & Validation
+    TokenModel tokenModel;
+    try {
+      final tokenService = Get.find<TokenService>();
+      tokenModel = tokenService.parseAndValidateLocally(token);
+    } on AppErrorType catch (errType) {
+      _triggerError(errType, source);
+      return;
+    } catch (_) {
+      _triggerError(AppErrorType.malformedLink, source);
+      return;
+    }
+
+    // 2. Single-use Local Validation Check
+    final storage = Get.find<SecureStorageService>();
+    final isAlreadyRedeemed = await storage.isNonceRedeemed(tokenModel.nonce);
+    if (isAlreadyRedeemed) {
+      _triggerError(AppErrorType.redeemedToken, source);
+      return;
+    }
+
+    // 3. Simulated Backend Token Exchange
+    Map<String, dynamic> sessionGrant;
+    try {
+      sessionGrant = await _repository.exchangeDeepLinkToken(tokenModel);
+    } on AppErrorType catch (errType) {
+      _triggerError(errType, source);
+      return;
+    } catch (_) {
+      _triggerError(AppErrorType.unknownError, source);
+      return;
+    }
+
+    // 4. Save Session Scoped to this passId & Mark Nonce as Redeemed
+    final sessionToken = sessionGrant['sessionToken'] as String;
+    final expiresAt = sessionGrant['expiresAt'] as String;
+    
+    await storage.saveSession(tokenModel.passId, sessionToken, expiresAt);
+    await storage.markNonceAsRedeemed(tokenModel.nonce);
+
+    // 5. Resolve Pass for Category Info and Navigation Routing
+    final pass = _repository.getPassById(tokenModel.passId);
     if (pass == null) {
       _triggerError(AppErrorType.invalidToken, source);
       return;
     }
 
-    // Success! Navigate directly to the pass and secure path
+    // Success! Navigate directly to the pass secure view
     state.value = DeepLinkState.success;
     
     final targetRoute = '/wallet/category/${pass.categoryId}/pass/${pass.passId}/secure';
     
-    // Trigger navigation using global go_router configuration
     final router = Get.find<GoRouter>();
     router.go(targetRoute);
   }

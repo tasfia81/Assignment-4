@@ -42,6 +42,14 @@ class DeepLinkErrorScreen extends StatelessWidget {
         explanation =
             "This token does not correspond to any active credential inside our security records.";
         break;
+      case AppErrorType.invalidSignature:
+        explanation =
+            "The token signature verification failed. The pass link might have been modified or tampered with.";
+        break;
+      case AppErrorType.revokedToken:
+        explanation =
+            "This pass token has been revoked by the issuer. Please contact support.";
+        break;
       case AppErrorType.redeemedToken:
         explanation =
             "This pass has already been validated and redeemed. Single-use passes cannot be loaded twice.";

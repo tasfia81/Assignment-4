@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../services/deep_link_service.dart';
+import '../../services/token_service.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -155,15 +156,27 @@ class ProfileScreen extends StatelessWidget {
                     _buildSimulationButton(
                       context,
                       "Concert Pass (Valid Events URL)",
-                      "pass_concert_1",
-                      deepLinkService,
+                      () {
+                        final token = Get.find<TokenService>().createSignedToken(
+                          passId: "pass_concert_1",
+                          validity: const Duration(minutes: 15),
+                          nonce: "nonce_concert_${DateTime.now().millisecondsSinceEpoch}",
+                        );
+                        deepLinkService.simulateDeepLink(token);
+                      },
                       AppColors.primary,
                     ),
                     _buildSimulationButton(
                       context,
                       "VIP Access Key (Valid Lounge URL)",
-                      "pass_vip_1",
-                      deepLinkService,
+                      () {
+                        final token = Get.find<TokenService>().createSignedToken(
+                          passId: "pass_vip_1",
+                          validity: const Duration(minutes: 15),
+                          nonce: "nonce_vip_${DateTime.now().millisecondsSinceEpoch}",
+                        );
+                        deepLinkService.simulateDeepLink(token);
+                      },
                       AppColors.accentCyan,
                     ),
                     const Padding(
@@ -173,36 +186,90 @@ class ProfileScreen extends StatelessWidget {
                     _buildSimulationButton(
                       context,
                       "Expired Pass Link",
-                      "error_expired",
-                      deepLinkService,
+                      () {
+                        final token = Get.find<TokenService>().createSignedToken(
+                          passId: "pass_concert_1",
+                          validity: const Duration(minutes: -5),
+                          nonce: "nonce_expired_${DateTime.now().millisecondsSinceEpoch}",
+                        );
+                        deepLinkService.simulateDeepLink(token);
+                      },
                       AppColors.error,
                     ),
                     _buildSimulationButton(
                       context,
                       "Invalid Pass Link",
-                      "error_invalid",
-                      deepLinkService,
+                      () {
+                        final token = Get.find<TokenService>().createSignedToken(
+                          passId: "pass_not_found",
+                          validity: const Duration(minutes: 15),
+                          nonce: "nonce_invalid_${DateTime.now().millisecondsSinceEpoch}",
+                        );
+                        deepLinkService.simulateDeepLink(token);
+                      },
                       AppColors.error,
                     ),
                     _buildSimulationButton(
                       context,
                       "Redeemed Pass Link",
-                      "error_redeemed",
-                      deepLinkService,
+                      () {
+                        final token = Get.find<TokenService>().createSignedToken(
+                          passId: "pass_concert_1",
+                          validity: const Duration(minutes: 15),
+                          nonce: "nonce_redeemed",
+                        );
+                        deepLinkService.simulateDeepLink(token);
+                      },
+                      AppColors.error,
+                    ),
+                    _buildSimulationButton(
+                      context,
+                      "Tampered / Invalid Signature",
+                      () {
+                        final tokenService = Get.find<TokenService>();
+                        final validToken = tokenService.createSignedToken(
+                          passId: "pass_concert_1",
+                          validity: const Duration(minutes: 15),
+                          nonce: "nonce_tampered_${DateTime.now().millisecondsSinceEpoch}",
+                        );
+                        // Corrupt the signature payload at the end of the base64url string
+                        final tamperedToken = validToken.substring(0, validToken.length - 8) + "12345678";
+                        deepLinkService.simulateDeepLink(tamperedToken);
+                      },
+                      AppColors.error,
+                    ),
+                    _buildSimulationButton(
+                      context,
+                      "Revoked Pass Link",
+                      () {
+                        final token = Get.find<TokenService>().createSignedToken(
+                          passId: "pass_concert_1",
+                          validity: const Duration(minutes: 15),
+                          nonce: "nonce_revoked",
+                        );
+                        deepLinkService.simulateDeepLink(token);
+                      },
                       AppColors.error,
                     ),
                     _buildSimulationButton(
                       context,
                       "Malformed URL Link",
-                      "error_malformed",
-                      deepLinkService,
+                      () {
+                        deepLinkService.simulateDeepLink("malformed_url_non_base64_payload!");
+                      },
                       AppColors.error,
                     ),
                     _buildSimulationButton(
                       context,
                       "Server Connection Error",
-                      "error_network",
-                      deepLinkService,
+                      () {
+                        final token = Get.find<TokenService>().createSignedToken(
+                          passId: "pass_concert_1",
+                          validity: const Duration(minutes: 15),
+                          nonce: "nonce_network_error",
+                        );
+                        deepLinkService.simulateDeepLink(token);
+                      },
                       AppColors.error,
                     ),
                   ],
@@ -261,8 +328,7 @@ class ProfileScreen extends StatelessWidget {
   Widget _buildSimulationButton(
     BuildContext context,
     String label,
-    String token,
-    DeepLinkService service,
+    VoidCallback onTap,
     Color accentColor,
   ) {
     return Container(
@@ -272,8 +338,8 @@ class ProfileScreen extends StatelessWidget {
         onPressed: () {
           // Go to root splash waiting state
           context.go('/');
-          // Trigger the simulation
-          service.simulateDeepLink(token);
+          // Trigger the simulation callback
+          onTap();
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.cardBgLighter,

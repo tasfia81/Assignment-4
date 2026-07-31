@@ -6,6 +6,7 @@ import 'package:assignment_4/data/repositories/pass_repository.dart';
 import 'package:assignment_4/core/storage/secure_storage_service.dart';
 import 'package:assignment_4/core/network/dio_client.dart';
 import 'package:assignment_4/services/deep_link_service.dart';
+import 'package:assignment_4/services/token_service.dart';
 import 'package:assignment_4/routing/app_router.dart';
 
 void main() {
@@ -14,6 +15,7 @@ void main() {
     Get.put(PassRepository());
     Get.put(SecureStorageService());
     Get.put(DioClient());
+    Get.put(TokenService());
     Get.put(DeepLinkService());
     Get.put<GoRouter>(appRouter);
 

@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
+import '../../core/storage/secure_storage_service.dart';
 import '../../data/models/pass_model.dart';
 import '../../data/repositories/pass_repository.dart';
 
@@ -30,8 +32,20 @@ class SecureTicketController extends GetxController {
     super.onClose();
   }
 
-  void _loadPassDetails() {
+  Future<void> _loadPassDetails() async {
     isLoading.value = true;
+
+    // Check if session token for this passId is valid in secure storage
+    final storage = Get.find<SecureStorageService>();
+    final hasValidSession = await storage.hasValidSession(passId);
+
+    if (!hasValidSession) {
+      isLoading.value = false;
+      final router = Get.find<GoRouter>();
+      router.go('/error?type=invalidToken');
+      return;
+    }
+
     final data = _repository.getPassById(passId);
     if (data != null) {
       pass.value = data;
