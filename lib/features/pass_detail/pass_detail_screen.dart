@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'pass_detail_controller.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/components/mesh_background.dart';
+import '../../core/components/ticket_painter.dart';
 import '../../data/models/pass_model.dart';
 
 class PassDetailScreen extends StatelessWidget {
@@ -24,16 +26,13 @@ class PassDetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Pass Details"),
+        title: const Text("PASS DETAILS"),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.go('/wallet/category/$categoryId'),
         ),
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColors.backgroundGradient,
-        ),
+      body: MeshGradientBackground(
         child: SafeArea(
           child: Obx(() {
             if (controller.isLoading.value) {
@@ -59,20 +58,32 @@ class PassDetailScreen extends StatelessWidget {
             final isInactive = pass.status != PassStatus.active;
 
             LinearGradient ticketGradient;
+            Color accentColor;
+            IconData icon;
+            bool enableHolo = false;
+
             switch (pass.category) {
               case PassCategoryType.event:
                 ticketGradient = AppColors.purpleGradient;
+                accentColor = AppColors.primaryLight;
+                icon = Icons.local_activity_rounded;
                 break;
               case PassCategoryType.access:
                 ticketGradient = AppColors.cyanGradient;
+                accentColor = AppColors.accentCyan;
+                icon = Icons.key_rounded;
                 break;
               case PassCategoryType.credential:
                 ticketGradient = AppColors.goldGradient;
+                accentColor = AppColors.accentGold;
+                icon = Icons.verified_user_rounded;
+                enableHolo = true;
                 break;
             }
 
             if (isInactive) {
               ticketGradient = AppColors.darkGradient;
+              accentColor = AppColors.textSecondary;
             }
 
             return Padding(
@@ -82,247 +93,245 @@ class PassDetailScreen extends StatelessWidget {
                   Expanded(
                     child: SingleChildScrollView(
                       physics: const BouncingScrollPhysics(),
-                      child: Stack(
-                        alignment: Alignment.center,
+                      child: Column(
                         children: [
-                          // Ticket shadow backdrop
-                          Container(
-                            margin: const EdgeInsets.only(top: 8),
-                            height: 480,
-                            decoration: BoxDecoration(
-                              color: Colors.transparent,
-                              borderRadius: BorderRadius.circular(28),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: isInactive
-                                      ? Colors.black.withOpacity(0.3)
-                                      : (pass.category == PassCategoryType.event
-                                          ? AppColors.primary.withOpacity(0.15)
-                                          : (pass.category == PassCategoryType.access
-                                              ? AppColors.accentCyan.withOpacity(0.1)
-                                              : AppColors.accentGold.withOpacity(0.1))),
-                                  blurRadius: 30,
-                                  offset: const Offset(0, 12),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // Physical ticket skeleton
-                          Container(
-                            height: 480,
-                            decoration: BoxDecoration(
-                              gradient: ticketGradient,
-                              borderRadius: BorderRadius.circular(28),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.08),
-                                width: 1,
+                          const SizedBox(height: 10),
+                          // Physical Ticket Container using Custom Painter
+                          TicketContainer(
+                            gradient: ticketGradient,
+                            borderColor: accentColor.withOpacity(0.5),
+                            punchPosition: 0.70,
+                            punchRadius: 14.0,
+                            isVoided: isInactive,
+                            voidText: pass.status.toString().split('.').last,
+                            enableHoloShimmer: enableHolo && !isInactive,
+                            shadows: [
+                              BoxShadow(
+                                color: isInactive
+                                    ? Colors.black.withOpacity(0.35)
+                                    : accentColor.withOpacity(0.15),
+                                blurRadius: 30,
+                                offset: const Offset(0, 12),
                               ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                // Logo and category header
-                                Padding(
-                                  padding: const EdgeInsets.all(24.0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        "OMNIPASS",
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w900,
-                                          color: Colors.white.withOpacity(0.85),
-                                          letterSpacing: 2,
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 10,
-                                          vertical: 5,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.15),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: Text(
-                                          pass.categoryId.toUpperCase(),
-                                          style: const TextStyle(
-                                            fontSize: 9,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                            letterSpacing: 0.5,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-
-                                // Main Fields
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 24.0,
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        pass.title,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontSize: 26,
-                                          fontWeight: FontWeight.w900,
-                                          color: Colors.white,
-                                          height: 1.15,
-                                          letterSpacing: -0.8,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 24),
-                                      _buildTicketRow(
-                                        "VENUE",
-                                        pass.venue,
-                                        "GATE",
-                                        pass.gate ?? "N/A",
-                                      ),
-                                      const SizedBox(height: 20),
-                                      _buildTicketRow(
-                                        "DATE",
-                                        pass.date,
-                                        "TIME",
-                                        pass.time,
-                                      ),
-                                      const SizedBox(height: 20),
-                                      _buildTicketRow(
-                                        "CARDHOLDER",
-                                        pass.ownerName,
-                                        "SEAT",
-                                        pass.seat ?? "General Access",
-                                      ),
-                                    ],
-                                  ),
-                                ),
-
-                                const Spacer(),
-
-                                // Dotted middle separator with circle cutouts
-                                SizedBox(
-                                  height: 30,
-                                  child: Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      Row(
-                                        children: List.generate(
-                                          40,
-                                          (index) => Expanded(
-                                            child: Container(
-                                              color: index % 2 == 0
-                                                  ? Colors.transparent
-                                                  : Colors.white.withOpacity(0.25),
-                                              height: 1.5,
+                            ],
+                            child: SizedBox(
+                              height: 480,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  // Logo and category header
+                                  Padding(
+                                    padding: const EdgeInsets.all(24.0),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Icon(icon, color: Colors.white70, size: 16),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              "OMNIPASS",
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w900,
+                                                color: Colors.white.withOpacity(0.85),
+                                                letterSpacing: 2.5,
+                                              ),
                                             ),
-                                          ),
+                                          ],
                                         ),
-                                      ),
-                                      Positioned(
-                                        left: -15,
-                                        child: Container(
-                                          width: 30,
-                                          height: 30,
-                                          decoration: const BoxDecoration(
-                                            color: AppColors.backgroundDb,
-                                            shape: BoxShape.circle,
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 5,
                                           ),
-                                        ),
-                                      ),
-                                      Positioned(
-                                        right: -15,
-                                        child: Container(
-                                          width: 30,
-                                          height: 30,
-                                          decoration: const BoxDecoration(
-                                            color: AppColors.backgroundDb,
-                                            shape: BoxShape.circle,
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withOpacity(0.12),
+                                            borderRadius: BorderRadius.circular(8),
                                           ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-
-                                const Spacer(),
-
-                                // Ticket Footing
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "STATUS",
-                                            style: TextStyle(
-                                              fontSize: 9,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white.withOpacity(0.6),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            pass.status
-                                                .toString()
-                                                .split('.')
-                                                .last
-                                                .toUpperCase(),
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w900,
-                                              color: pass.status == PassStatus.active
-                                                  ? AppColors.accentCyan
-                                                  : (pass.status == PassStatus.expired
-                                                      ? AppColors.error
-                                                      : AppColors.textSecondary),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            "PRICE / LEVEL",
-                                            style: TextStyle(
-                                              fontSize: 9,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white.withOpacity(0.6),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            pass.price ?? "COMPLIMENTARY",
+                                          child: Text(
+                                            pass.categoryId.toUpperCase(),
                                             style: const TextStyle(
-                                              fontSize: 16,
+                                              fontSize: 9,
                                               fontWeight: FontWeight.w900,
                                               color: Colors.white,
+                                              letterSpacing: 0.8,
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                    ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
+
+                                  // Main Fields (Top Section above punch notches)
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          pass.title,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.w900,
+                                            color: Colors.white,
+                                            height: 1.2,
+                                            letterSpacing: -0.6,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 24),
+                                        _buildTicketRow(
+                                          "LOCATION",
+                                          pass.venue,
+                                          "GATE",
+                                          pass.gate ?? "GENERAL",
+                                        ),
+                                        const SizedBox(height: 18),
+                                        _buildTicketRow(
+                                          "VALID DATE",
+                                          pass.date,
+                                          "START TIME",
+                                          pass.time,
+                                        ),
+                                        const SizedBox(height: 18),
+                                        _buildTicketRow(
+                                          "OWNER/HOLDER",
+                                          pass.ownerName,
+                                          "ASSIGNED SEAT",
+                                          pass.seat ?? "G.A. ENTRY",
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  const Spacer(),
+                                  // Empty area where punch notches and dashes reside (punchPosition = 0.70)
+                                  const SizedBox(height: 28),
+                                  const Spacer(),
+
+                                  // Ticket Footing (Bottom Section below notches)
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              "SECURITY STATUS",
+                                              style: TextStyle(
+                                                fontSize: 8,
+                                                fontWeight: FontWeight.w900,
+                                                color: Colors.white.withOpacity(0.55),
+                                                letterSpacing: 0.8,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              pass.status.toString().split('.').last.toUpperCase(),
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w900,
+                                                color: pass.status == PassStatus.active
+                                                    ? AppColors.accentCyan
+                                                    : (pass.status == PassStatus.expired
+                                                        ? AppColors.error
+                                                        : AppColors.textSecondary),
+                                                letterSpacing: 0.5,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              "PASS LEVEL",
+                                              style: TextStyle(
+                                                fontSize: 8,
+                                                fontWeight: FontWeight.w900,
+                                                color: Colors.white.withOpacity(0.55),
+                                                letterSpacing: 0.8,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              pass.price ?? "COMPLIMENTARY",
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w900,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
+                          
+                          const SizedBox(height: 8),
+
+                          // NFC wave visualizer if active
+                          if (!isInactive)
+                            Container(
+                              margin: const EdgeInsets.symmetric(vertical: 16),
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                              decoration: BoxDecoration(
+                                color: AppColors.cardBg.withOpacity(0.4),
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.06),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  _NfcWaveVisualizer(color: accentColor),
+                                  const SizedBox(width: 20),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          "EXPRESS TRANSMISSION DETECTED",
+                                          style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w900,
+                                            color: AppColors.accentCyan,
+                                            letterSpacing: 1.0,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          "Hold top of phone near terminal scanner",
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white.withOpacity(0.6),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Icon(Icons.contactless_rounded, color: accentColor, size: 24),
+                                ],
+                              ),
+                            )
+                          else
+                            const SizedBox(height: 20),
                         ],
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
+                  
                   // CTA Button
                   SizedBox(
                     width: double.infinity,
@@ -341,7 +350,7 @@ class PassDetailScreen extends StatelessWidget {
                         disabledForegroundColor: AppColors.textMuted,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
+                          borderRadius: BorderRadius.circular(20),
                         ),
                       ),
                       child: controller.isExchanging.value
@@ -364,10 +373,10 @@ class PassDetailScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 10),
                                 Text(
-                                  isInactive ? "PASS INACTIVE" : "VIEW SECURE ACCESS KEY",
+                                  isInactive ? "PASS INACTIVE" : "GENERATE SECURE SCAN KEY",
                                   style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w900,
                                     letterSpacing: 0.5,
                                   ),
                                 ),
@@ -375,6 +384,7 @@ class PassDetailScreen extends StatelessWidget {
                             ),
                     ),
                   ),
+                  const SizedBox(height: 8),
                 ],
               ),
             );
@@ -401,10 +411,10 @@ class PassDetailScreen extends StatelessWidget {
               Text(
                 titleLeft,
                 style: TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white.withOpacity(0.65),
-                  letterSpacing: 0.5,
+                  fontSize: 8,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white.withOpacity(0.5),
+                  letterSpacing: 0.8,
                 ),
               ),
               const SizedBox(height: 4),
@@ -413,7 +423,7 @@ class PassDetailScreen extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  fontSize: 15,
+                  fontSize: 13,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -430,10 +440,10 @@ class PassDetailScreen extends StatelessWidget {
               Text(
                 titleRight,
                 style: TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white.withOpacity(0.65),
-                  letterSpacing: 0.5,
+                  fontSize: 8,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white.withOpacity(0.5),
+                  letterSpacing: 0.8,
                 ),
               ),
               const SizedBox(height: 4),
@@ -442,7 +452,7 @@ class PassDetailScreen extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  fontSize: 15,
+                  fontSize: 13,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -451,6 +461,65 @@ class PassDetailScreen extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// Circular pulsing ripples representation of contactless NFC
+class _NfcWaveVisualizer extends StatefulWidget {
+  final Color color;
+  const _NfcWaveVisualizer({required this.color});
+
+  @override
+  State<_NfcWaveVisualizer> createState() => _NfcWaveVisualizerState();
+}
+
+class _NfcWaveVisualizerState extends State<_NfcWaveVisualizer>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 44,
+      height: 44,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Stack(
+            alignment: Alignment.center,
+            children: List.generate(3, (index) {
+              final progress = (_controller.value + index / 3.0) % 1.0;
+              return Container(
+                width: 14 + progress * 30,
+                height: 14 + progress * 30,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: widget.color.withOpacity((1.0 - progress) * 0.5),
+                    width: 1.5,
+                  ),
+                ),
+              );
+            }),
+          );
+        },
+      ),
     );
   }
 }

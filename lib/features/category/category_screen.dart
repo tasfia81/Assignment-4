@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'category_controller.dart';
 import '../wallet/widgets/pass_card.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/components/mesh_background.dart';
 
 class CategoryScreen extends StatelessWidget {
   final String categoryId;
@@ -23,16 +24,13 @@ class CategoryScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Obx(() => Text(controller.categoryName.value)),
+        title: Obx(() => Text(controller.categoryName.value.toUpperCase())),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.go('/wallet'),
         ),
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColors.backgroundGradient,
-        ),
+      body: MeshGradientBackground(
         child: SafeArea(
           child: Obx(() {
             final passes = controller.categoryPasses;

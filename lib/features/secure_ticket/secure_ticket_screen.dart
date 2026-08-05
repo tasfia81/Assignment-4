@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'secure_ticket_controller.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/components/mesh_background.dart';
 
 class SecureTicketScreen extends StatelessWidget {
   final String categoryId;
@@ -23,16 +24,13 @@ class SecureTicketScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Secure Access Pass"),
+        title: const Text("SECURE ACCESS KEY"),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.go('/wallet/category/$categoryId/pass/$passId'),
         ),
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColors.backgroundGradient,
-        ),
+      body: MeshGradientBackground(
         child: SafeArea(
           child: Obx(() {
             if (controller.isLoading.value) {
@@ -55,19 +53,23 @@ class SecureTicketScreen extends StatelessWidget {
               );
             }
 
+            final isLowTime = controller.secondsRemaining.value < 8;
+            final timerColor = isLowTime ? AppColors.error : AppColors.accentCyan;
+
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
               child: Column(
                 children: [
                   Text(
-                    pass.title,
+                    pass.title.toUpperCase(),
                     textAlign: TextAlign.center,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 22,
+                      fontSize: 18,
                       fontWeight: FontWeight.w900,
                       color: Colors.white,
+                      letterSpacing: 1.0,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -75,22 +77,22 @@ class SecureTicketScreen extends StatelessWidget {
                     pass.venue,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.white.withOpacity(0.6),
-                      fontWeight: FontWeight.w500,
+                      fontSize: 12,
+                      color: Colors.white.withOpacity(0.55),
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
 
                   // High security banner
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: AppColors.success.withOpacity(0.12),
+                      color: AppColors.success.withOpacity(0.08),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: AppColors.success.withOpacity(0.3),
-                        width: 1,
+                        color: AppColors.success.withOpacity(0.25),
+                        width: 1.2,
                       ),
                     ),
                     child: const Row(
@@ -99,12 +101,12 @@ class SecureTicketScreen extends StatelessWidget {
                         _BlinkingDot(),
                         SizedBox(width: 8),
                         Text(
-                          "DYNAMIC PASS ACTIVE",
+                          "DYNAMIC LEDGER KEY ACTIVE",
                           style: TextStyle(
-                            fontSize: 10,
+                            fontSize: 9,
                             fontWeight: FontWeight.w900,
                             color: AppColors.success,
-                            letterSpacing: 1,
+                            letterSpacing: 1.2,
                           ),
                         ),
                       ],
@@ -113,24 +115,34 @@ class SecureTicketScreen extends StatelessWidget {
                   
                   const Spacer(),
 
-                  // QR code container
+                  // QR code container with Cyber Scanner Brackets
                   Center(
                     child: Container(
-                      width: 260,
-                      height: 260,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(28),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withOpacity(0.2),
-                            blurRadius: 32,
-                            offset: const Offset(0, 12),
+                      width: 276,
+                      height: 276,
+                      padding: const EdgeInsets.all(8), // Spacer to set brackets outside QR card
+                      child: CustomPaint(
+                        foregroundPainter: CyberScannerPainter(
+                          color: timerColor,
+                          bracketLength: 22.0,
+                          strokeWidth: 3.5,
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: timerColor.withOpacity(0.18),
+                                blurRadius: 32,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
                           ),
-                        ],
+                          child: const _ScanningQrCode(),
+                        ),
                       ),
-                      child: const _ScanningQrCode(),
                     ),
                   ),
                   
@@ -140,11 +152,11 @@ class SecureTicketScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: AppColors.cardBg,
+                      color: AppColors.cardBg.withOpacity(0.5),
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.08),
-                        width: 1,
+                        color: Colors.white.withOpacity(0.06),
+                        width: 1.2,
                       ),
                     ),
                     child: Row(
@@ -157,10 +169,10 @@ class SecureTicketScreen extends StatelessWidget {
                               Text(
                                 "DYNAMIC PASS TOKEN",
                                 style: TextStyle(
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white.withOpacity(0.5),
-                                  letterSpacing: 0.5,
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white.withOpacity(0.55),
+                                  letterSpacing: 0.8,
                                 ),
                               ),
                               const SizedBox(height: 6),
@@ -169,10 +181,11 @@ class SecureTicketScreen extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w900,
                                   fontFamily: 'monospace',
                                   color: Colors.white,
+                                  letterSpacing: 1.5,
                                 ),
                               ),
                             ],
@@ -188,9 +201,9 @@ class SecureTicketScreen extends StatelessWidget {
                               child: CircularProgressIndicator(
                                 value: controller.secondsRemaining.value / 30,
                                 strokeWidth: 4,
-                                backgroundColor: Colors.white.withOpacity(0.05),
-                                valueColor: const AlwaysStoppedAnimation<Color>(
-                                  AppColors.accentCyan,
+                                backgroundColor: Colors.white.withOpacity(0.04),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  timerColor,
                                 ),
                               ),
                             ),
@@ -215,17 +228,17 @@ class SecureTicketScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        Icons.security_rounded,
-                        size: 16,
-                        color: Colors.white.withOpacity(0.4),
+                        Icons.verified_user_rounded,
+                        size: 15,
+                        color: Colors.white.withOpacity(0.35),
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        "Pass rotates periodically. Screenshots are invalid.",
+                        "Code auto-rotates. Screenshots are invalid.",
                         style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.white.withOpacity(0.4),
-                          fontWeight: FontWeight.w600,
+                          fontSize: 10,
+                          color: Colors.white.withOpacity(0.35),
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
@@ -238,6 +251,55 @@ class SecureTicketScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+// Neon cyber-brackets custom painter for QR container
+class CyberScannerPainter extends CustomPainter {
+  final Color color;
+  final double bracketLength;
+  final double strokeWidth;
+
+  CyberScannerPainter({
+    required this.color,
+    required this.bracketLength,
+    required this.strokeWidth,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    final w = size.width;
+    final h = size.height;
+    final l = bracketLength;
+
+    // Top-Left corner bracket
+    canvas.drawLine(const Offset(0, 0), Offset(l, 0), paint);
+    canvas.drawLine(const Offset(0, 0), Offset(0, l), paint);
+
+    // Top-Right corner bracket
+    canvas.drawLine(Offset(w, 0), Offset(w - l, 0), paint);
+    canvas.drawLine(Offset(w, 0), Offset(w, l), paint);
+
+    // Bottom-Left corner bracket
+    canvas.drawLine(Offset(0, h), Offset(l, h), paint);
+    canvas.drawLine(Offset(0, h), Offset(0, h - l), paint);
+
+    // Bottom-Right corner bracket
+    canvas.drawLine(Offset(w, h), Offset(w - l, h), paint);
+    canvas.drawLine(Offset(w, h), Offset(w, h - l), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CyberScannerPainter oldDelegate) {
+    return oldDelegate.color != color ||
+        oldDelegate.bracketLength != bracketLength ||
+        oldDelegate.strokeWidth != strokeWidth;
   }
 }
 
@@ -328,14 +390,22 @@ class _ScanningQrCodeState extends State<_ScanningQrCode>
               left: 0,
               right: 0,
               child: Container(
-                height: 4,
+                height: 3,
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
+                  gradient: const LinearGradient(
+                    colors: [
+                      Colors.transparent,
+                      AppColors.accentCyan,
+                      Colors.white,
+                      AppColors.accentCyan,
+                      Colors.transparent,
+                    ],
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.8),
-                      blurRadius: 10,
-                      spreadRadius: 2,
+                      color: AppColors.accentCyan.withOpacity(0.6),
+                      blurRadius: 8,
+                      spreadRadius: 1,
                     ),
                   ],
                 ),
@@ -379,7 +449,7 @@ class _ScanningQrCodeState extends State<_ScanningQrCode>
               (row >= 16 && row <= 18 && col >= 2 && col <= 4);
 
           return Container(
-            color: insideBorder ? Colors.black87 : Colors.transparent,
+            color: Colors.black87,
           );
         }
 

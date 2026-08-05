@@ -111,12 +111,20 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              _buildSettingTile(Icons.nfc_rounded, "NFC Express Mode", true),
-              _buildSettingTile(Icons.fingerprint_rounded, "Biometric Verification", true),
-              _buildSettingTile(
-                Icons.notifications_active_outlined,
-                "Pass Push Alerts",
-                false,
+              const _SettingTile(
+                icon: Icons.nfc_rounded,
+                title: "NFC Express Mode",
+                initialValue: true,
+              ),
+              const _SettingTile(
+                icon: Icons.fingerprint_rounded,
+                title: "Biometric Verification",
+                initialValue: true,
+              ),
+              const _SettingTile(
+                icon: Icons.notifications_active_outlined,
+                title: "Pass Push Alerts",
+                initialValue: false,
               ),
               const SizedBox(height: 28),
 
@@ -283,7 +291,32 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingTile(IconData icon, String title, bool initialValue) {
+class _SettingTile extends StatefulWidget {
+  final IconData icon;
+  final String title;
+  final bool initialValue;
+
+  const _SettingTile({
+    required this.icon,
+    required this.title,
+    required this.initialValue,
+  });
+
+  @override
+  State<_SettingTile> createState() => _SettingTileState();
+}
+
+class _SettingTileState extends State<_SettingTile> {
+  late bool _value;
+
+  @override
+  void initState() {
+    super.initState();
+    _value = widget.initialValue;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -300,10 +333,10 @@ class ProfileScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, size: 20, color: AppColors.textSecondary),
+              Icon(widget.icon, size: 20, color: AppColors.textSecondary),
               const SizedBox(width: 12),
               Text(
-                title,
+                widget.title,
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -313,8 +346,12 @@ class ProfileScreen extends StatelessWidget {
             ],
           ),
           Switch(
-            value: initialValue,
-            onChanged: (val) {},
+            value: _value,
+            onChanged: (val) {
+              setState(() {
+                _value = val;
+              });
+            },
             activeColor: AppColors.accentCyan,
             activeTrackColor: AppColors.accentCyan.withOpacity(0.2),
             inactiveThumbColor: AppColors.textMuted,
@@ -324,6 +361,7 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
   }
+}
 
   Widget _buildSimulationButton(
     BuildContext context,

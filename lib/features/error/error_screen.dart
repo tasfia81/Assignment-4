@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/errors/app_error.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/components/mesh_background.dart';
 
 class DeepLinkErrorScreen extends StatelessWidget {
   final String errorTypeName;
@@ -66,16 +67,13 @@ class DeepLinkErrorScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Access Error"),
+        title: const Text("ACCESS ERROR"),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.go('/wallet'),
         ),
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColors.backgroundGradient,
-        ),
+      body: MeshGradientBackground(
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
@@ -89,10 +87,10 @@ class DeepLinkErrorScreen extends StatelessWidget {
                     width: 80,
                     height: 80,
                     decoration: BoxDecoration(
-                      color: AppColors.error.withOpacity(0.12),
+                      color: AppColors.error.withOpacity(0.08),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: AppColors.error.withOpacity(0.3),
+                        color: AppColors.error.withOpacity(0.25),
                         width: 2,
                       ),
                     ),
@@ -105,11 +103,11 @@ class DeepLinkErrorScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 32),
                 Text(
-                  appError.message,
+                  appError.message.toUpperCase(),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
                     color: Colors.white,
                     letterSpacing: -0.5,
                   ),
@@ -130,23 +128,23 @@ class DeepLinkErrorScreen extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () => context.go('/wallet'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.cardBg,
+                      backgroundColor: AppColors.cardBg.withOpacity(0.5),
                       foregroundColor: Colors.white,
                       surfaceTintColor: Colors.transparent,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(20),
                         side: BorderSide(
-                          color: Colors.white.withOpacity(0.08),
-                          width: 1,
+                          color: Colors.white.withOpacity(0.06),
+                          width: 1.2,
                         ),
                       ),
                       elevation: 0,
                     ),
                     child: const Text(
-                      "RETURN TO WALLET HOME",
-                      style: const TextStyle(
+                      "RETURN TO WALLET",
+                      style: TextStyle(
                         fontSize: 14,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w900,
                         letterSpacing: 0.5,
                       ),
                     ),

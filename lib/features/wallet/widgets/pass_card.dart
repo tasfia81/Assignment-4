@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/components/ticket_painter.dart';
 import '../../../../data/models/pass_model.dart';
 
 class PassCard extends StatelessWidget {
@@ -14,21 +15,28 @@ class PassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Select gradient based on category
+    // Select styling attributes based on category
     LinearGradient gradient;
+    Color accentColor;
     IconData icon;
+    bool enableHolo = false;
+
     switch (pass.category) {
       case PassCategoryType.event:
         gradient = AppColors.purpleGradient;
+        accentColor = AppColors.primaryLight;
         icon = Icons.confirmation_number_outlined;
         break;
       case PassCategoryType.access:
         gradient = AppColors.cyanGradient;
+        accentColor = AppColors.accentCyan;
         icon = Icons.vpn_key_outlined;
         break;
       case PassCategoryType.credential:
         gradient = AppColors.goldGradient;
+        accentColor = AppColors.accentGold;
         icon = Icons.badge_outlined;
+        enableHolo = true; // Gold credentials get premium holographic foil
         break;
     }
 
@@ -38,185 +46,165 @@ class PassCard extends StatelessWidget {
 
     if (isInactive) {
       gradient = AppColors.darkGradient;
+      accentColor = AppColors.textSecondary;
     }
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        padding: const EdgeInsets.all(22),
-        decoration: BoxDecoration(
+        margin: const EdgeInsets.symmetric(vertical: 10),
+        child: TicketContainer(
           gradient: gradient,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.08),
-            width: 1,
-          ),
-          boxShadow: [
+          borderColor: accentColor.withOpacity(0.5),
+          isVoided: isInactive,
+          voidText: isExpired ? 'EXPIRED' : 'REDEEMED',
+          enableHoloShimmer: enableHolo && !isInactive,
+          punchPosition: 0.68,
+          punchRadius: 12.0,
+          shadows: [
             BoxShadow(
               color: isInactive
-                  ? Colors.black.withOpacity(0.4)
-                  : (pass.category == PassCategoryType.event
-                      ? AppColors.primary.withOpacity(0.25)
-                      : (pass.category == PassCategoryType.access
-                          ? AppColors.accentCyan.withOpacity(0.2)
-                          : AppColors.accentGold.withOpacity(0.2))),
+                  ? Colors.black.withOpacity(0.35)
+                  : accentColor.withOpacity(0.18),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
           ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top Section: Tag and Status/NFC icon
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(icon, size: 14, color: Colors.white),
-                      const SizedBox(width: 6),
-                      Text(
-                        pass.category.toString().split('.').last.toUpperCase(),
-                        style: const TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (isInactive)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: isExpired
-                          ? AppColors.error.withOpacity(0.15)
-                          : Colors.white.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: isExpired
-                            ? AppColors.error.withOpacity(0.5)
-                            : AppColors.textSecondary.withOpacity(0.3),
-                        width: 1,
-                      ),
-                    ),
-                    child: Text(
-                      isExpired ? 'EXPIRED' : 'REDEEMED',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: isExpired ? AppColors.error : AppColors.textSecondary,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  )
-                else
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.nfc_rounded,
-                        color: Colors.white.withOpacity(0.9),
-                        size: 20,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        "TAP",
-                        style: TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white.withOpacity(0.7),
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ],
-                  ),
-              ],
-            ),
-            const SizedBox(height: 28),
-            // Title
-            Text(
-              pass.title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
-                color: Colors.white,
-                letterSpacing: -0.6,
-                height: 1.15,
-              ),
-            ),
-            const SizedBox(height: 20),
-            // Venue / Date Info
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "VENUE",
-                        style: TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white.withOpacity(0.6),
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        pass.venue,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                // Top header: Badge and Status indicator
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      "DATE & TIME",
-                      style: TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white.withOpacity(0.6),
-                        letterSpacing: 0.5,
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.10),
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(icon, size: 13, color: Colors.white),
+                          const SizedBox(width: 6),
+                          Text(
+                            pass.category.toString().split('.').last.toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "${pass.date} | ${pass.time}",
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                    if (!isInactive)
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.nfc_rounded,
+                            color: Colors.white.withOpacity(0.8),
+                            size: 18,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            "EXPRESS MODE",
+                            style: TextStyle(
+                              fontSize: 8,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white.withOpacity(0.7),
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                        ],
                       ),
+                  ],
+                ),
+                
+                const SizedBox(height: 24),
+                
+                // Title
+                Text(
+                  pass.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: -0.5,
+                    height: 1.2,
+                  ),
+                ),
+                
+                // Flexible spacer to separate top content from perforated bottom info
+                const SizedBox(height: 38),
+                
+                // Bottom stub section
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "LOCATION",
+                            style: TextStyle(
+                              fontSize: 8,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white.withOpacity(0.5),
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            pass.venue,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          "VALID DATE",
+                          style: TextStyle(
+                            fontSize: 8,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white.withOpacity(0.5),
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          pass.date,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );

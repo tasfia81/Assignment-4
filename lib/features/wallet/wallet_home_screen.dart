@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'wallet_controller.dart';
 import 'widgets/pass_card.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/components/mesh_background.dart';
 import '../../data/models/pass_model.dart';
 
 class WalletHomeScreen extends StatelessWidget {
@@ -14,10 +15,7 @@ class WalletHomeScreen extends StatelessWidget {
     final controller = Get.put(WalletController());
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColors.backgroundGradient,
-        ),
+      body: MeshGradientBackground(
         child: SafeArea(
           child: Obx(() {
             final activePasses = controller.activePasses;
@@ -27,31 +25,54 @@ class WalletHomeScreen extends StatelessWidget {
             return CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [
-                // 1. App Bar Header
+                // 1. Premium App Bar Header
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                    padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              "OMNIPASS",
-                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                letterSpacing: 2,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
+                            ShaderMask(
+                              shaderCallback: (bounds) => const LinearGradient(
+                                colors: [AppColors.accentCyan, AppColors.primaryLight, AppColors.accentPink],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ).createShader(bounds),
+                              child: const Text(
+                                "OMNIPASS",
+                                style: TextStyle(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 3.5,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                             const SizedBox(height: 4),
-                            Text(
-                              "Digital Secure Wallet",
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: AppColors.textSecondary,
-                                fontWeight: FontWeight.w500,
-                              ),
+                            Row(
+                              children: [
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.accentCyan,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "DIGITAL SECURE KEYCHAIN",
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppColors.textSecondary.withOpacity(0.8),
+                                    letterSpacing: 1.0,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -60,17 +81,24 @@ class WalletHomeScreen extends StatelessWidget {
                           child: Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: AppColors.cardBg,
-                              borderRadius: BorderRadius.circular(16),
+                              color: AppColors.cardBg.withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(18),
                               border: Border.all(
                                 color: Colors.white.withOpacity(0.08),
-                                width: 1,
+                                width: 1.2,
                               ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.15),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
                             child: const Icon(
-                              Icons.person_outline_rounded,
+                              Icons.tune_rounded,
                               color: Colors.white,
-                              size: 24,
+                              size: 20,
                             ),
                           ),
                         ),
@@ -83,20 +111,37 @@ class WalletHomeScreen extends StatelessWidget {
                 if (activePasses.isNotEmpty) ...[
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
+                      padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            "Featured Passes (${controller.activeCount})",
+                            "FEATURED ASSETS",
                             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w900,
                               color: Colors.white,
+                              letterSpacing: 1.2,
+                              fontSize: 13,
                             ),
                           ),
-                          const Icon(
-                            Icons.keyboard_arrow_right,
-                            color: AppColors.textSecondary,
+                          Row(
+                            children: [
+                              Text(
+                                "${controller.activeCount} ACTIVE",
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppColors.accentCyan,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(
+                                Icons.circle,
+                                size: 6,
+                                color: AppColors.accentCyan,
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -104,7 +149,7 @@ class WalletHomeScreen extends StatelessWidget {
                   ),
                   SliverToBoxAdapter(
                     child: SizedBox(
-                      height: 204,
+                      height: 220,
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         physics: const BouncingScrollPhysics(),
@@ -135,17 +180,19 @@ class WalletHomeScreen extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(24, 28, 24, 12),
                     child: Text(
-                      "Categories",
+                      "CATEGORIES",
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w900,
                         color: Colors.white,
+                        letterSpacing: 1.2,
+                        fontSize: 13,
                       ),
                     ),
                   ),
                 ),
                 SliverToBoxAdapter(
                   child: SizedBox(
-                    height: 112,
+                    height: 120,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       physics: const BouncingScrollPhysics(),
@@ -156,47 +203,83 @@ class WalletHomeScreen extends StatelessWidget {
                         
                         IconData icon;
                         Color accentColor;
+                        String categoryLabel = "";
+                        
                         switch (cat.type) {
                           case PassCategoryType.event:
-                            icon = Icons.confirmation_number_rounded;
+                            icon = Icons.local_activity_rounded;
                             accentColor = AppColors.primary;
+                            categoryLabel = "TICKETS";
                             break;
                           case PassCategoryType.access:
-                            icon = Icons.vpn_key_rounded;
+                            icon = Icons.key_rounded;
                             accentColor = AppColors.accentCyan;
+                            categoryLabel = "KEYS";
                             break;
                           case PassCategoryType.credential:
-                            icon = Icons.badge_rounded;
+                            icon = Icons.verified_user_rounded;
                             accentColor = AppColors.accentGold;
+                            categoryLabel = "CREDS";
                             break;
                         }
+
+                        final passCount = allPasses.where((p) => p.category == cat.type).length;
 
                         return GestureDetector(
                           onTap: () => context.go('/wallet/category/${cat.categoryId}'),
                           child: Container(
-                            width: 144,
-                            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            width: 130,
+                            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: AppColors.cardBg,
-                              borderRadius: BorderRadius.circular(20),
+                              color: AppColors.cardBg.withOpacity(0.4),
+                              borderRadius: BorderRadius.circular(22),
                               border: Border.all(
-                                color: Colors.white.withOpacity(0.08),
-                                width: 1,
+                                color: accentColor.withOpacity(0.25),
+                                width: 1.2,
                               ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: accentColor.withOpacity(0.04),
+                                  blurRadius: 10,
+                                  spreadRadius: 1,
+                                ),
+                              ],
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Icon(icon, color: accentColor, size: 28),
-                                Text(
-                                  cat.name,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
-                                    color: Colors.white,
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: accentColor.withOpacity(0.12),
+                                    shape: BoxShape.circle,
                                   ),
+                                  child: Icon(icon, color: accentColor, size: 20),
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      categoryLabel,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.white,
+                                        letterSpacing: 0.8,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      "$passCount Items",
+                                      style: TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.textSecondary.withOpacity(0.8),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -212,10 +295,12 @@ class WalletHomeScreen extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(24, 32, 24, 12),
                     child: Text(
-                      "All Assets",
+                      "SECURED LEDGER",
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w900,
                         color: Colors.white,
+                        letterSpacing: 1.2,
+                        fontSize: 13,
                       ),
                     ),
                   ),
