@@ -291,6 +291,59 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildSimulationButton(
+    BuildContext context,
+    String label,
+    VoidCallback onTap,
+    Color accentColor,
+  ) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      height: 48,
+      child: ElevatedButton(
+        onPressed: () {
+          // Go to root splash waiting state
+          context.go('/');
+          // Trigger the simulation callback
+          onTap();
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.cardBgLighter,
+          foregroundColor: Colors.white,
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+          alignment: Alignment.centerLeft,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: accentColor.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Icon(
+              Icons.bolt_rounded,
+              color: accentColor,
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _SettingTile extends StatefulWidget {
   final IconData icon;
   final String title;
@@ -358,59 +411,6 @@ class _SettingTileState extends State<_SettingTile> {
             inactiveTrackColor: Colors.white10,
           ),
         ],
-      ),
-    );
-  }
-}
-
-  Widget _buildSimulationButton(
-    BuildContext context,
-    String label,
-    VoidCallback onTap,
-    Color accentColor,
-  ) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      height: 48,
-      child: ElevatedButton(
-        onPressed: () {
-          // Go to root splash waiting state
-          context.go('/');
-          // Trigger the simulation callback
-          onTap();
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.cardBgLighter,
-          foregroundColor: Colors.white,
-          surfaceTintColor: Colors.transparent,
-          elevation: 0,
-          alignment: Alignment.centerLeft,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(
-              color: accentColor.withOpacity(0.2),
-              width: 1,
-            ),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Icon(
-              Icons.bolt_rounded,
-              color: accentColor,
-              size: 16,
-            ),
-          ],
-        ),
       ),
     );
   }
